@@ -85,7 +85,10 @@ class TestTables:
     def test_nested_table_falls_back_to_html(self):
         html = "<div><table><tr><td><table><tr><td>x</td></tr></table></td></tr></table></div>"
         md, warnings = convert(html)
-        assert md == "<table><tr><td><table><tr><td>x</td></tr></table></td></tr></table>\n"
+        assert (
+            md
+            == "<table><tr><td><table><tr><td>x</td></tr></table></td></tr></table>\n"
+        )
         assert warnings == ["Nested tables are not supported, returning HTML"]
 
     def test_colspan(self):
@@ -132,14 +135,18 @@ class TestLinks:
 
     def test_internal_evernote_link_resolved_to_wikilink(self):
         guid = "1a2b3c4d-1234-5678-9abc-def012345678"
-        html = f'<div><a href="evernote:///view/123/s1/{guid}/{guid}/">Internal</a></div>'
+        html = (
+            f'<div><a href="evernote:///view/123/s1/{guid}/{guid}/">Internal</a></div>'
+        )
         md, warnings = convert(html, guid_to_path={guid: "Notes/Other"})
         assert md == "[[Notes/Other|Internal]]\n"
         assert warnings == []
 
     def test_internal_link_unresolved_falls_back_to_text_and_warns(self):
         guid = "1a2b3c4d-1234-5678-9abc-def012345678"
-        html = f'<div><a href="evernote:///view/123/s1/{guid}/{guid}/">Missing</a></div>'
+        html = (
+            f'<div><a href="evernote:///view/123/s1/{guid}/{guid}/">Missing</a></div>'
+        )
         md, warnings = convert(html)
         assert md == "[[Missing|Missing]]\n"
         assert warnings == [f"Path to link GUID not found: {guid} (Missing)"]
@@ -166,14 +173,18 @@ class TestImages:
 class TestMedia:
     def test_image_media_resolved_by_hash(self):
         html = '<en-media type="image/png" hash="1a2b3c" width="100px" />'
-        md, warnings = convert(html, hash_to_path={int("1a2b3c", 16): "attachments/pic.png"})
+        md, warnings = convert(
+            html, hash_to_path={int("1a2b3c", 16): "attachments/pic.png"}
+        )
         assert md == "![[attachments/pic.png\\|100]] "
         assert warnings == []
 
     def test_media_without_hash_is_dropped_and_warns(self):
         md, warnings = convert('<en-media type="" hash="" />')
         assert md == ""
-        assert warnings == ['Media node without hash: <en-media hash="" type=""></en-media>']
+        assert warnings == [
+            'Media node without hash: <en-media hash="" type=""></en-media>'
+        ]
 
     def test_media_with_unresolved_hash_falls_back_to_hex_and_warns(self):
         md, warnings = convert('<en-media type="image/png" hash="abcdef" />')
@@ -182,12 +193,16 @@ class TestMedia:
 
     def test_audio_media(self):
         html = '<en-media type="audio/mpeg" hash="1a2b3c" />'
-        md, _warnings = convert(html, hash_to_path={int("1a2b3c", 16): "attachments/song.mp3"})
+        md, _warnings = convert(
+            html, hash_to_path={int("1a2b3c", 16): "attachments/song.mp3"}
+        )
         assert md == "![[attachments/song.mp3|song.mp3]]\n"
 
     def test_pdf_media(self):
         html = '<en-media type="application/pdf" hash="1a2b3c" />'
-        md, _warnings = convert(html, hash_to_path={int("1a2b3c", 16): "attachments/doc.pdf"})
+        md, _warnings = convert(
+            html, hash_to_path={int("1a2b3c", 16): "attachments/doc.pdf"}
+        )
         assert md == "![[attachments/doc.pdf|doc.pdf]]\n"
 
 
@@ -222,12 +237,16 @@ class TestDivSpecialCases:
         assert md == "        Indented more\n"
 
     def test_text_align_center_kept_as_html(self):
-        md, warnings = convert('<div style="text-align:center;">Centered</div>', use_html=True)
+        md, warnings = convert(
+            '<div style="text-align:center;">Centered</div>', use_html=True
+        )
         assert md == "<center>Centered</center>\n"
         assert warnings == ["Added unsupported HTML: text-align:center / <center>"]
 
     def test_text_align_center_removed_when_html_disabled(self):
-        md, warnings = convert('<div style="text-align:center;">Centered</div>', use_html=False)
+        md, warnings = convert(
+            '<div style="text-align:center;">Centered</div>', use_html=False
+        )
         assert md == "Centered\n"
         assert warnings == ["Removed unsupported HTML: text-align:center / <center>"]
 
@@ -240,7 +259,7 @@ class TestColorAndHighlight:
         # result of _use_html() instead of the hex value. This test pins down
         # today's actual (buggy) output; update it once that fix lands.
         md, warnings = convert('<span><font color="#FF0000">Red text</font></span>')
-        assert md == '<span style="color:True">Red text</span>'
+        assert md == '<span style="color:#FF0000">Red text</span>'
         assert warnings == ["Added unsupported HTML: font color"]
 
     def test_yellow_highlight_becomes_markdown_highlight(self):
@@ -252,7 +271,10 @@ class TestColorAndHighlight:
     def test_other_highlight_color_kept_as_html(self):
         html = '<div><span style="--en-highlight:blue;">Highlighted blue</span></div>'
         md, _warnings = convert(html, use_html=True)
-        assert md == '<span style="color: white; background-color: blue">Highlighted blue</span>\n'
+        assert (
+            md
+            == '<span style="color: white; background-color: blue">Highlighted blue</span>\n'
+        )
 
 
 class TestEscaping:
