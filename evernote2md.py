@@ -294,7 +294,7 @@ class EvernoteHTMLToMarkdownConverter:
 
         # <font color="#FF0000">...</font>
         # <font> is deprecated, but still found in old notes.
-        if color := node.get("color") and self._use_html("font color"):
+        if (color := node.get("color")) and self._use_html("font color"):
             return f'<span style="color:{color}">{content}</span>'
 
         if node.get("style"):
