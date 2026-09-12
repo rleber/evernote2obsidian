@@ -71,8 +71,8 @@ class EvernoteHTMLToMarkdownConverter:
         )  # BeautifulSoup object (initialized later)
         self.use_html = use_html  # if True, use some HTML for things not supported by Obsidian Markdown
         self.url_pattern = re.compile(
-            r"\b(?:http|https|ftp)://\S+"
-        )  # Regex pattern for URLs
+            r"(\b(?:http|https|ftp)://\S+)"
+        )  # Regex pattern for URLs (captured, so re.split() keeps them)
 
         self._set_node_handlers()
 
@@ -788,7 +788,7 @@ class EvernoteHTMLToMarkdownConverter:
             return text
 
         # Split the text into parts, separating URLs and other text
-        parts = re.split(f"({self.url_pattern.pattern})", text)
+        parts = self.url_pattern.split(text)
 
         # Escape non-URL parts and reconstruct the text
         escaped_text = "".join(self.escape_non_url(part) for part in parts)
