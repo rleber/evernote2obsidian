@@ -74,8 +74,13 @@ class EvernoteHTMLToMarkdownConverter:
             r"\b(?:http|https|ftp)://\S+"
         )  # Regex pattern for URLs
 
-        # Dispatch table used by _process_node() to pick a handler by tag name.
-        # Tags not listed here are processed by recursing into their children.
+        self._set_node_handlers()
+
+    def _set_node_handlers(self):
+        """Build the dispatch table used by _process_node() to pick a handler by tag name.
+
+        Tags not listed here are processed by recursing into their children.
+        """
         self._node_handlers = {
             "div": self._process_div,
             "p": self._process_text_element,
