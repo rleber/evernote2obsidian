@@ -1398,7 +1398,7 @@ class Exporter_HTML(Exporter):
             # <guid>#<guid> -> Links to items inside notes?
             guid = guid.split("#")[0]
             if not (path := guid_to_path.get(guid)):
-                path = regex_match[0]
+                path = regex_match[0][1:-1]  # strip the surrounding quotes from the match
                 log(
                     logging.ERROR,
                     f"    - [ERROR] Path to GUID not found: {guid} ({path})",
