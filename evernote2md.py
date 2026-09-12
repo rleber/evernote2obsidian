@@ -74,6 +74,42 @@ class EvernoteHTMLToMarkdownConverter:
             r"\b(?:http|https|ftp)://\S+"
         )  # Regex pattern for URLs
 
+        # Dispatch table used by _process_node() to pick a handler by tag name.
+        # Tags not listed here are processed by recursing into their children.
+        self._node_handlers = {
+            "div": self._process_div,
+            "p": self._process_text_element,
+            "span": self._process_text_element,
+            "font": self._process_text_element,
+            "b": self._process_simple_tags,
+            "strong": self._process_simple_tags,
+            "i": self._process_simple_tags,
+            "em": self._process_simple_tags,
+            "u": self._process_simple_tags,
+            "s": self._process_simple_tags,
+            "del": self._process_simple_tags,
+            "sup": self._process_simple_tags,
+            "sub": self._process_simple_tags,
+            "blockquote": self._process_simple_tags,
+            "code": self._process_simple_tags,
+            "h1": self._process_header,
+            "h2": self._process_header,
+            "h3": self._process_header,
+            "h4": self._process_header,
+            "h5": self._process_header,
+            "h6": self._process_header,
+            "ul": self._process_list,
+            "ol": self._process_list,
+            "li": self._process_list_item,
+            "table": self._process_table,
+            "a": self._process_link,
+            "img": self._process_image,
+            "br": lambda node: "\n",
+            "hr": lambda node: "___\n",  # or '---', '* * *'
+            "en-todo": self._process_checkbox,
+            "en-media": self._process_media,
+        }
+
     def convert_html_to_markdown(
         self,
         html_content: str,
@@ -150,57 +186,11 @@ class EvernoteHTMLToMarkdownConverter:
                 return ""
             return self._escape_text(node)
 
-        def save_result(text):
-            if text:
-                result.append(text)
+        if handler := self._node_handlers.get(node.name):
+            return handler(node)
 
-        result = []
-
-        # Handle different HTML elements
-        if node.name == "div":
-            save_result(self._process_div(node))
-        elif node.name in ["p", "span", "font"]:
-            save_result(self._process_text_element(node))
-        elif node.name in [
-            "b",
-            "strong",
-            "i",
-            "em",
-            "u",
-            "s",
-            "del",
-            "sup",
-            "sub",
-            "blockquote",
-            "code",
-        ]:
-            save_result(self._process_simple_tags(node))
-        elif node.name in ["h1", "h2", "h3", "h4", "h5", "h6"]:
-            save_result(self._process_header(node))
-        elif node.name in ["ul", "ol"]:
-            save_result(self._process_list(node))
-        elif node.name == "li":
-            save_result(self._process_list_item(node))
-        elif node.name == "table":
-            save_result(self._process_table(node))
-        elif node.name == "a":
-            save_result(self._process_link(node))
-        elif node.name == "img":
-            save_result(self._process_image(node))
-        elif node.name == "br":
-            save_result("\n")
-        elif node.name == "hr":
-            save_result("___\n")  # or '---', '* * *'
-        elif node.name == "en-todo":
-            save_result(self._process_checkbox(node))
-        elif node.name == "en-media":
-            save_result(self._process_media(node))
-        else:
-            # Process other elements recursively
-            for child in node.children:
-                save_result(self._process_node(child))
-
-        return "".join(result)
+        # Unrecognized tags: process children recursively
+        return "".join(self._process_node(child) for child in node.children)
 
     def _newline_prefix(self, node) -> str:
         """Add a newline before the text if the node is a block-level element after a non-block-level element."""
