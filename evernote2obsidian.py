@@ -386,7 +386,7 @@ in the configuration, or sync Evernote data with:
     except sqlite3.OperationalError as e:
         log(logging.CRITICAL, f"Could not open database {db_path}")
         log(logging.CRITICAL, f"Exception: {e}")
-        return
+        return False
 
     return conn
 
