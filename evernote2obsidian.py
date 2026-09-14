@@ -538,7 +538,7 @@ def sel_nb_menu():
     guids_notebooks = {}
 
     for notebook in sorted(
-        notebooks, key=lambda x: f"{x.get('stack', '')}{x['name']}".lower()
+        notebooks, key=lambda x: f"{x.get('stack') or ''}{x['name']}".lower()
     ):
         cur = conn.execute(
             "select COUNT(*) from notes where notebook_guid=? and is_active=1",
@@ -601,7 +601,7 @@ def list_db():
     log(IMPORTANT, "Listing notes in selected notebooks.")
 
     for notebook in sorted(
-        notebooks, key=lambda x: f"{x.get('stack', '')}{x['name']}".lower()
+        notebooks, key=lambda x: f"{x.get('stack') or ''}{x['name']}".lower()
     ):
         # Process only selected notebooks
         if cfg["notebooks"] and notebook["guid"] not in cfg["notebooks"]:
@@ -669,7 +669,7 @@ def scan_db():
         return 1
 
     for notebook in sorted(
-        notebooks, key=lambda x: f"{x.get('stack', '')}{x['name']}".lower()
+        notebooks, key=lambda x: f"{x.get('stack') or ''}{x['name']}".lower()
     ):
         # Process only selected notebooks
         if cfg["notebooks"] and notebook["guid"] not in cfg["notebooks"]:
@@ -1030,7 +1030,7 @@ class Exporter:
         notebook_data = []
         notebooks = get_notebooks_from_db(conn)
         sorted_notebooks = sorted(
-            notebooks, key=lambda x: f"{x.get('stack', '')}{x['name']}".lower()
+            notebooks, key=lambda x: f"{x.get('stack') or ''}{x['name']}".lower()
         )
 
         for notebook in sorted_notebooks:
