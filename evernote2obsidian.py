@@ -320,51 +320,53 @@ def log(level, msg):
 def cfg_menu():
     """Show current configuration and allow user to change it."""
 
-    values = [
-        (o, f"{option_data[o]['menu_name']}: {cfg[o] if o in cfg else default_cfg[o]}")
-        for o in option_data
-    ]
-    option = radiolist_dialog(
-        title="Configuration",
-        text="Select an item then <Change> to modify it, or <Back> to return:",
-        ok_text="Change",
-        cancel_text="Back",
-        values=values,
-    ).run()
-    if option is None:
-        return True
-
-    name = option_data[option]["name"]
-    otype = option_data[option]["type"]
-    help = option_data[option]["help"]
-    title = f"Change '{name}'"
-    text = f"{help}\n\nEnter new value for '{name}':"
-    new_value = None
-    if otype in [str, int, float]:
-        new_value = input_dialog(
-            title=title, text=text, default=str(cfg[option] or "")
+    while True:
+        values = [
+            (
+                o,
+                f"{option_data[o]['menu_name']}: {cfg[o] if o in cfg else default_cfg[o]}",
+            )
+            for o in option_data
+        ]
+        option = radiolist_dialog(
+            title="Configuration",
+            text="Select an item then <Change> to modify it, or <Back> to return:",
+            ok_text="Change",
+            cancel_text="Back",
+            values=values,
         ).run()
-    elif otype is bool or otype is list:
-        if otype is list:
-            _values = [(v, v) for v in option_data[option]["options"]]
-        else:
-            _values = [(True, "True"), (False, "False")]
-        new_value = radiolist_dialog(
-            title=title, text=text, values=_values, default=cfg[option]
-        ).run()
+        if option is None:
+            return True
 
-    if new_value is not None:
-        if otype is int:
-            cfg[option] = int(new_value)
-        elif otype is float:
-            cfg[option] = float(new_value)
-        else:
-            cfg[option] = new_value
-        cfg.save()
-        if option == "log_file":
-            restart_log()
+        name = option_data[option]["name"]
+        otype = option_data[option]["type"]
+        help = option_data[option]["help"]
+        title = f"Change '{name}'"
+        text = f"{help}\n\nEnter new value for '{name}':"
+        new_value = None
+        if otype in [str, int, float]:
+            new_value = input_dialog(
+                title=title, text=text, default=str(cfg[option] or "")
+            ).run()
+        elif otype is bool or otype is list:
+            if otype is list:
+                _values = [(v, v) for v in option_data[option]["options"]]
+            else:
+                _values = [(True, "True"), (False, "False")]
+            new_value = radiolist_dialog(
+                title=title, text=text, values=_values, default=cfg[option]
+            ).run()
 
-    return cfg_menu()
+        if new_value is not None:
+            if otype is int:
+                cfg[option] = int(new_value)
+            elif otype is float:
+                cfg[option] = float(new_value)
+            else:
+                cfg[option] = new_value
+            cfg.save()
+            if option == "log_file":
+                restart_log()
 
 
 def open_db(db_path):
